@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { StorageService } from '../services/storage';
 import { Product, Transaction, TransactionType, PaymentMethod, TransactionItem } from '../types';
-import { Plus, ShoppingCart, Trash2, Printer } from 'lucide-react';
+import { Plus, ShoppingCart, Trash2, Printer, FileText, CheckCircle } from 'lucide-react';
 
 const Sales: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
@@ -74,7 +74,7 @@ const Sales: React.FC = () => {
       setCustomer('');
       setPaymentMethod(PaymentMethod.CASH);
       refreshData();
-      alert('Penjualan Berhasil Disimpan!');
+      alert(`Transaksi Berhasil! Faktur Penjualan (Invoice) #${newTx.referenceNumber} telah diterbitkan.`);
     } catch (error: any) {
       alert(`Error: ${error.message}`);
     } finally {
@@ -82,12 +82,34 @@ const Sales: React.FC = () => {
     }
   };
 
+  const handlePrintInvoice = (tx: Transaction) => {
+    // Simulation of generating a formal PDF output
+    const invoiceContent = `
+      FAKTUR PENJUALAN (INVOICE)
+      --------------------------
+      No: ${tx.referenceNumber}
+      Tanggal: ${new Date(tx.date).toLocaleDateString()}
+      Pelanggan: ${tx.counterparty}
+      Metode: ${tx.paymentMethod}
+      --------------------------
+      Item:
+      ${tx.items.map(i => `- ${i.productName} x${i.quantity} = Rp ${i.total.toLocaleString()}`).join('\n')}
+      --------------------------
+      TOTAL: Rp ${tx.totalAmount.toLocaleString()}
+    `;
+    console.log(invoiceContent);
+    alert(`Mencetak Dokumen Faktur...\n\n${invoiceContent}`);
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-100px)]">
       {/* Product Catalog */}
       <div className="lg:col-span-2 space-y-4 flex flex-col h-full">
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-semibold text-gray-800 mb-2">Katalog Produk</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-2 flex items-center gap-2">
+             <FileText size={20} className="text-blue-600"/> 
+             Siklus Pendapatan: Katalog & Pesanan
+          </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 overflow-y-auto max-h-[500px] p-1">
             {products.map(product => (
               <div 
@@ -122,16 +144,16 @@ const Sales: React.FC = () => {
 
         {/* Recent Sales History */}
         <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex-1 overflow-hidden flex flex-col">
-          <h2 className="text-lg font-semibold text-gray-800 mb-4">Riwayat Penjualan Terakhir</h2>
+          <h2 className="text-lg font-semibold text-gray-800 mb-4">Output: Laporan Faktur Penjualan</h2>
           <div className="overflow-y-auto flex-1">
             <table className="min-w-full text-sm">
               <thead className="bg-gray-50 sticky top-0">
                 <tr>
-                  <th className="px-4 py-2 text-left text-gray-500">No. Inv</th>
+                  <th className="px-4 py-2 text-left text-gray-500">No. Invoice</th>
                   <th className="px-4 py-2 text-left text-gray-500">Tanggal</th>
                   <th className="px-4 py-2 text-left text-gray-500">Pelanggan</th>
                   <th className="px-4 py-2 text-right text-gray-500">Total</th>
-                  <th className="px-4 py-2 text-center text-gray-500">Aksi</th>
+                  <th className="px-4 py-2 text-center text-gray-500">Cetak</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -142,7 +164,11 @@ const Sales: React.FC = () => {
                     <td className="px-4 py-3">{tx.counterparty}</td>
                     <td className="px-4 py-3 text-right">Rp {tx.totalAmount.toLocaleString()}</td>
                     <td className="px-4 py-3 text-center">
-                      <button className="text-gray-400 hover:text-gray-600">
+                      <button 
+                        onClick={() => handlePrintInvoice(tx)}
+                        className="text-gray-500 hover:text-blue-600 transition-colors p-1 rounded hover:bg-blue-50"
+                        title="Cetak Faktur (Output)"
+                      >
                         <Printer size={16} />
                       </button>
                     </td>
@@ -159,7 +185,7 @@ const Sales: React.FC = () => {
         <div className="p-4 border-b border-gray-100 bg-blue-600 text-white rounded-t-xl">
           <h2 className="flex items-center gap-2 font-semibold">
             <ShoppingCart size={20} />
-            Keranjang Pesanan
+            Entri Sales Order (SO)
           </h2>
         </div>
 
@@ -167,7 +193,7 @@ const Sales: React.FC = () => {
           {cart.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-gray-400">
               <ShoppingCart size={48} className="mb-2 opacity-50" />
-              <p>Keranjang kosong</p>
+              <p>Belum ada item pesanan.</p>
             </div>
           ) : (
             cart.map(item => (
@@ -192,18 +218,18 @@ const Sales: React.FC = () => {
 
         <div className="p-4 border-t border-gray-100 bg-gray-50 rounded-b-xl space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Nama Pelanggan</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Nama Pelanggan (Customer)</label>
             <input 
               type="text" 
               value={customer}
               onChange={(e) => setCustomer(e.target.value)}
-              placeholder="Contoh: Budi Santoso"
+              placeholder="Masukkan nama pelanggan..."
               className="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Metode Pembayaran</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Syarat Pembayaran</label>
             <div className="grid grid-cols-2 gap-2">
               <button 
                 onClick={() => setPaymentMethod(PaymentMethod.CASH)}
@@ -228,9 +254,9 @@ const Sales: React.FC = () => {
             <button 
               onClick={handleCheckout}
               disabled={loading || cart.length === 0 || !customer}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex justify-center items-center gap-2"
             >
-              {loading ? 'Memproses...' : 'Proses Penjualan'}
+               {loading ? 'Memproses...' : <><CheckCircle size={18}/> Buat Faktur Penjualan</>}
             </button>
           </div>
         </div>

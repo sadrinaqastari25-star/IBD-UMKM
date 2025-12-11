@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { StorageService } from '../services/storage';
 import { GeminiService } from '../services/gemini';
 import { AuditLog } from '../types';
-import { ShieldCheck, Loader2, AlertTriangle, Info, CheckCircle } from 'lucide-react';
+import { ShieldCheck, Loader2, AlertTriangle, Info, CheckCircle, BrainCircuit } from 'lucide-react';
 
 const Audit: React.FC = () => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
@@ -28,74 +28,85 @@ const Audit: React.FC = () => {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div className="bg-gradient-to-r from-indigo-600 to-blue-600 rounded-2xl p-8 text-white shadow-xl">
+      <div className="bg-gradient-to-r from-indigo-700 to-blue-600 rounded-2xl p-8 text-white shadow-xl">
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
-              <ShieldCheck size={32} />
-              AI Internal Control
+              <BrainCircuit size={32} />
+              IBD-UMKM: Auditor Digital
             </h1>
-            <p className="mt-2 text-indigo-100 max-w-xl">
-              Gunakan kecerdasan buatan untuk mendeteksi anomali transaksi, risiko fraud, 
-              dan pelanggaran prosedur operasional standar (SOP) secara otomatis.
+            <p className="mt-2 text-indigo-100 max-w-xl text-lg">
+              Analisis Data & Deteksi Anomali
+            </p>
+            <p className="mt-1 text-sm text-indigo-200">
+              Membantu pengambilan keputusan manajerial dengan mendeteksi pola tidak wajar, 
+              potensi fraud, dan inefisiensi dalam siklus bisnis.
             </p>
           </div>
           <button
             onClick={runAudit}
             disabled={loading}
-            className="bg-white text-indigo-600 px-6 py-3 rounded-lg font-bold hover:bg-indigo-50 transition-colors shadow-lg flex items-center gap-2 disabled:opacity-75"
+            className="bg-white text-indigo-700 px-6 py-3 rounded-lg font-bold hover:bg-indigo-50 transition-colors shadow-lg flex items-center gap-2 disabled:opacity-75"
           >
-            {loading ? <Loader2 className="animate-spin" /> : 'Jalankan Audit'}
+            {loading ? <Loader2 className="animate-spin" /> : 'Mulai Audit & Analisis'}
           </button>
         </div>
-        {lastRun && <p className="mt-4 text-xs text-indigo-200">Terakhir diperiksa: {lastRun}</p>}
+        {lastRun && <p className="mt-4 text-xs text-indigo-300 font-mono">Laporan dihasilkan: {lastRun}</p>}
       </div>
 
       <div className="space-y-4">
         {logs.length > 0 ? (
-          logs.map((log) => (
-            <div 
-              key={log.id} 
-              className={`p-6 rounded-xl border-l-4 shadow-sm bg-white animate-fade-in ${
-                log.severity === 'HIGH' ? 'border-red-500' : 
-                log.severity === 'MEDIUM' ? 'border-orange-500' : 'border-blue-500'
-              }`}
-            >
-              <div className="flex items-start gap-4">
-                <div className={`p-2 rounded-full flex-shrink-0 ${
-                   log.severity === 'HIGH' ? 'bg-red-100 text-red-600' : 
-                   log.severity === 'MEDIUM' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'
-                }`}>
-                  {log.severity === 'HIGH' ? <AlertTriangle size={24} /> : <Info size={24} />}
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-center mb-1">
-                    <h3 className="font-bold text-gray-800 text-lg">Deteksi: {log.message}</h3>
-                    <span className={`text-xs font-bold px-2 py-1 rounded uppercase ${
-                      log.severity === 'HIGH' ? 'bg-red-100 text-red-700' : 
-                      log.severity === 'MEDIUM' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
-                    }`}>
-                      {log.severity} Risk
-                    </span>
+          <>
+            <h3 className="text-lg font-bold text-gray-800 ml-1">Laporan Temuan & Rekomendasi</h3>
+            {logs.map((log) => (
+              <div 
+                key={log.id} 
+                className={`p-6 rounded-xl border-l-4 shadow-sm bg-white animate-fade-in ${
+                  log.severity === 'HIGH' ? 'border-red-600 ring-1 ring-red-100' : 
+                  log.severity === 'MEDIUM' ? 'border-orange-500 ring-1 ring-orange-100' : 'border-blue-500'
+                }`}
+              >
+                <div className="flex items-start gap-4">
+                  <div className={`p-2 rounded-full flex-shrink-0 ${
+                     log.severity === 'HIGH' ? 'bg-red-100 text-red-600' : 
+                     log.severity === 'MEDIUM' ? 'bg-orange-100 text-orange-600' : 'bg-blue-100 text-blue-600'
+                  }`}>
+                    {log.severity === 'HIGH' ? <AlertTriangle size={24} /> : <Info size={24} />}
                   </div>
-                  <p className="text-gray-600 mt-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                    <span className="font-semibold text-gray-700">Rekomendasi Tindakan:</span> {log.recommendation}
-                  </p>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center mb-1">
+                      <h3 className="font-bold text-gray-800 text-lg">{log.message}</h3>
+                      <span className={`text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider ${
+                        log.severity === 'HIGH' ? 'bg-red-100 text-red-700' : 
+                        log.severity === 'MEDIUM' ? 'bg-orange-100 text-orange-700' : 'bg-blue-100 text-blue-700'
+                      }`}>
+                        {log.severity === 'HIGH' ? 'CRITICAL ALERT' : log.severity === 'MEDIUM' ? 'WARNING' : 'ADVICE'}
+                      </span>
+                    </div>
+                    <p className="text-gray-600 mt-3 text-sm">
+                      <span className="font-semibold text-gray-800 block mb-1">Rekomendasi Tindakan (Pengendalian Internal):</span> 
+                      {log.recommendation}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))
+            ))}
+          </>
         ) : (
-          <div className="text-center py-12 bg-white rounded-xl border border-dashed border-gray-300">
+          <div className="text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
             {loading ? (
               <div className="flex flex-col items-center">
-                <Loader2 size={48} className="animate-spin text-blue-500 mb-4" />
-                <p className="text-gray-500">AI sedang menganalisis data transaksi...</p>
+                <Loader2 size={48} className="animate-spin text-blue-600 mb-4" />
+                <h3 className="text-lg font-medium text-gray-800">Sedang Menganalisis Data...</h3>
+                <p className="text-gray-500 max-w-sm mx-auto mt-2">
+                  AI sedang memeriksa integritas data transaksi, efisiensi stok, dan potensi anomali keuangan.
+                </p>
               </div>
             ) : (
               <>
-                <CheckCircle size={48} className="mx-auto text-gray-300 mb-4" />
-                <p className="text-gray-500">Klik "Jalankan Audit" untuk memulai pemeriksaan kesehatan bisnis.</p>
+                <ShieldCheck size={48} className="mx-auto text-gray-300 mb-4" />
+                <h3 className="text-lg font-medium text-gray-800">Siap Melakukan Pemeriksaan</h3>
+                <p className="text-gray-500 mt-2">Klik tombol di atas untuk memulai audit sistem.</p>
               </>
             )}
           </div>
