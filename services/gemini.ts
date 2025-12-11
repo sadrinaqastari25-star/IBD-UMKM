@@ -1,7 +1,19 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { Transaction, Product, AuditLog } from "../types";
 
-const apiKey = process.env.API_KEY || '';
+// Safety check for process.env to prevent "ReferenceError: process is not defined" in browser
+const getApiKey = () => {
+  try {
+    if (typeof process !== 'undefined' && process.env && process.env.API_KEY) {
+      return process.env.API_KEY;
+    }
+  } catch (e) {
+    // Ignore error if process is not defined
+  }
+  return '';
+};
+
+const apiKey = getApiKey();
 const ai = new GoogleGenAI({ apiKey });
 
 export const GeminiService = {
@@ -12,11 +24,11 @@ export const GeminiService = {
     if (!apiKey) {
       console.warn("API Key missing for Gemini");
       return [{
-        id: 'error',
+        id: 'error-key',
         timestamp: new Date().toISOString(),
         severity: 'LOW',
-        message: 'API Key belum dikonfigurasi. Fitur AI Audit tidak aktif.',
-        recommendation: 'Tambahkan API Key di pengaturan environment untuk mengaktifkan Auditor Digital.'
+        message: 'API Key belum dikonfigurasi.',
+        recommendation: 'Aplikasi berjalan dalam mode demo offline. Konfigurasi API Key Google GenAI untuk mengaktifkan audit otomatis.'
       }];
     }
 
@@ -110,7 +122,7 @@ export const GeminiService = {
         timestamp: new Date().toISOString(),
         severity: 'MEDIUM',
         message: 'Gagal menganalisis pola transaksi saat ini.',
-        recommendation: 'Silakan coba lagi beberapa saat lagi.'
+        recommendation: 'Pastikan koneksi internet stabil dan API Key valid.'
       }];
     }
   }
